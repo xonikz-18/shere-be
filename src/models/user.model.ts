@@ -9,6 +9,8 @@ export interface User {
   department: string;
   contact_number: string;
   password: string;
+  profile_picture?: string;
+  role?: string;
   created_at?: Date;
 }
 
@@ -23,7 +25,7 @@ export const createUser = async (user: User): Promise<ResultSetHeader> => {
 
 export const findUserByEmail = async (email: string): Promise<User | null> => {
   const [rows] = await pool.execute<RowDataPacket[]>(
-    `SELECT * FROM Users WHERE email = ?`,
+    `SELECT id, full_name as fullname, email, sex, department, contact_number, password, profile_picture, role FROM Users WHERE email = ?`,
     [email]
   );
   return rows.length > 0 ? (rows[0] as User) : null;

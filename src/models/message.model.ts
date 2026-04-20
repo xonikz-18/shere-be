@@ -16,7 +16,7 @@ export const createMessage = async (
 
 export const getMessageById = async (id: number): Promise<RowDataPacket | null> => {
   const [rows] = await pool.execute<RowDataPacket[]>(
-    `SELECT m.*, u.full_name as sender_name
+    `SELECT m.*, u.full_name as sender_name, u.profile_picture as sender_profile_picture
      FROM messages m
      LEFT JOIN Users u ON m.sender_id = u.id
      WHERE m.id = ?`,
@@ -31,7 +31,8 @@ export const getThread = async (
 ): Promise<RowDataPacket[]> => {
   const [rows] = await pool.execute<RowDataPacket[]>(
     `SELECT m.*, 
-            u.full_name as sender_name
+            u.full_name as sender_name,
+            u.profile_picture as sender_profile_picture
      FROM messages m
      LEFT JOIN Users u ON m.sender_id = u.id
      WHERE (m.sender_id = ? AND m.receiver_id = ?)
@@ -47,6 +48,7 @@ export const getConversations = async (userId: number): Promise<RowDataPacket[]>
     `SELECT 
        other_user_id,
        other_name,
+       other_profile_picture,
        last_message,
        last_message_at,
        unread_count
@@ -54,6 +56,7 @@ export const getConversations = async (userId: number): Promise<RowDataPacket[]>
        SELECT 
          CASE WHEN m.sender_id = ? THEN m.receiver_id ELSE m.sender_id END as other_user_id,
          u.full_name as other_name,
+         u.profile_picture as other_profile_picture,
          m.message_text as last_message,
          m.created_at as last_message_at,
          SUM(CASE WHEN m.receiver_id = ? AND m.is_read = 0 THEN 1 ELSE 0 END) 

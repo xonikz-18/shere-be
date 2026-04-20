@@ -1,11 +1,10 @@
 import type { Context } from 'hono';
-import { createPost, getAllPosts, getPostById } from '../models/post.model.js';
+import { createPost, getAllPosts, getPostById, updatePost, deletePost } from '../models/post.model.js';
 
 export const addPost = async (c: Context) => {
   try {
     const body = await c.req.json();
 
-    // Angular sends both userId/user_id and itemName/item_name so handle both
     const user_id = body.user_id ?? body.userId;
     const item_name = body.item_name ?? body.itemName;
     const { description, attachment } = body;
@@ -48,6 +47,7 @@ export const getPosts = async (c: Context) => {
       description: p.description,
       image: p.attachment ?? '',
       owner: p.owner_name ?? 'Unknown',
+      ownerProfilePicture: p.owner_profile_picture ?? '',
       date: new Date(p.created_at).toLocaleDateString(),
       status: p.status
     }));
@@ -56,6 +56,56 @@ export const getPosts = async (c: Context) => {
 
   } catch (error) {
     console.error('Get posts error:', error);
+    return c.json({ message: 'Internal server error.' }, 500);
+  }
+};
+
+export const editPost = async (c: Context) => {
+  try {
+    const id = Number(c.req.param('id'));
+    const body = await c.req.json();
+
+    const item_name = body.item_name ?? body.itemName ?? body.name;
+    const description = body.description;
+    const attachment = body.attachment ?? body.image ?? null;
+    const status = body.status ?? 'available';
+
+    // Kung walang bagong image, kuhanin yung existing
+    let finalAttachment = attachment;
+    if (!finalAttachment) {
+      const existing = await getPostById(id);
+      finalAttachment = existing?.attachment ?? null;
+    }
+
+    await updatePost(id, { item_name, description, attachment: finalAttachment, status });
+    const updated = await getPostById(id);
+
+    return c.json({
+      post: {
+        id: updated?.id,
+        userId: updated?.user_id,
+        name: updated?.item_name,
+        description: updated?.description,
+        image: updated?.attachment ?? '',
+        owner: updated?.owner_name ?? 'Unknown',
+        date: new Date(updated?.created_at).toLocaleDateString(),
+        status: updated?.status
+      }
+    }, 200);
+
+  } catch (error) {
+    console.error('Edit post error:', error);
+    return c.json({ message: 'Internal server error.' }, 500);
+  }
+};
+
+export const removePost = async (c: Context) => {
+  try {
+    const id = Number(c.req.param('id'));
+    await deletePost(id);
+    return c.json({ message: 'Post deleted.' }, 200);
+  } catch (error) {
+    console.error('Delete post error:', error);
     return c.json({ message: 'Internal server error.' }, 500);
   }
 };

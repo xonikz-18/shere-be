@@ -6,6 +6,10 @@ import loginRoute from './routes/login.route.js';
 import postRoute from './routes/post.route.js';
 import borrowRequestRoute from './routes/borrow-request.route.js';
 import messageRoute from './routes/message.route.js';
+import authRoute from './routes/auth.route.js';
+import otpRoute from './routes/otp.route.js';
+import { serveStatic } from '@hono/node-server/serve-static';
+
 
 const app = new Hono()
 
@@ -18,7 +22,9 @@ app.route('/auth', loginRoute)
 app.route('/api', postRoute)
 app.route('/api', borrowRequestRoute)
 app.route('/api', messageRoute)
-
+app.route('/auth', authRoute);
+app.route('/api/otp', otpRoute) 
+app.use('/uploads/*', serveStatic({ root: './' }));
 serve({
   fetch: app.fetch,
   port: 3000

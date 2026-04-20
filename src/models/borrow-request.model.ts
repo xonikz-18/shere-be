@@ -50,7 +50,8 @@ export const getIncomingRequestsByOwner = async (ownerId: number): Promise<RowDa
   const [rows] = await pool.execute<RowDataPacket[]>(
     `SELECT br.*,
             p.item_name as post_name,
-            u.full_name as borrower_name
+            u.full_name as borrower_name,
+            u.profile_picture as borrower_profile_picture
      FROM borrow_requests br
      LEFT JOIN posts p ON br.post_id = p.id
      LEFT JOIN Users u ON br.borrower_id = u.id
@@ -60,6 +61,7 @@ export const getIncomingRequestsByOwner = async (ownerId: number): Promise<RowDa
   );
   return rows;
 };
+
 
 export const updateRequestStatus = async (
   id: number,
@@ -92,7 +94,8 @@ export const getNotificationsForUser = async (userId: number): Promise<RowDataPa
     `SELECT br.*,
             p.item_name as post_name,
             u.full_name as borrower_name,
-            ou.full_name as owner_name
+            ou.full_name as owner_name,
+            ou.profile_picture as owner_profile_picture
      FROM borrow_requests br
      LEFT JOIN posts p ON br.post_id = p.id
      LEFT JOIN Users u ON br.borrower_id = u.id

@@ -85,7 +85,7 @@ export const getIncomingRequests = async (c: Context) => {
       ownerId: Number(ownerId),
       borrowerId: r.borrower_id,
       borrowerName: r.borrower_name,
-      borrowerProfilePicture: '',
+      borrowerProfilePicture: r.borrower_profile_picture ?? '',
       status: r.status,
       requestedAt: r.created_at,
       updatedAt: r.updated_at ?? r.created_at
@@ -97,6 +97,7 @@ export const getIncomingRequests = async (c: Context) => {
     return c.json({ message: 'Internal server error.' }, 500);
   }
 };
+
 
 export const approveRequest = async (c: Context) => {
   try {
@@ -145,7 +146,7 @@ export const getUserNotifications = async (c: Context) => {
       status: r.status,
       itemName: r.post_name,
       actorName: r.owner_name,
-      actorProfilePicture: '',
+      actorProfilePicture: r.owner_profile_picture ?? '',
       message: r.status === 'approved'
         ? `${r.owner_name} approved your request for "${r.post_name}".`
         : `${r.owner_name} declined your request for "${r.post_name}".`,

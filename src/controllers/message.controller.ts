@@ -29,7 +29,7 @@ const decrypt = (encrypted: string): string => {
     const decrypted = Buffer.concat([decipher.update(encryptedBuffer), decipher.final()]);
     return decrypted.toString('utf8');
   } catch {
-    return encrypted; // return as-is if decryption fails (old unencrypted messages)
+    return encrypted;
   }
 };
 
@@ -58,7 +58,7 @@ export const sendMessage = async (c: Context) => {
         isRead: Boolean(msg?.is_read),
         createdAt: msg?.created_at,
         senderName: msg?.sender_name ?? '',
-        senderProfilePicture: ''
+        senderProfilePicture: msg?.sender_profile_picture ?? ''
       }
     }, 201);
   } catch (error) {
@@ -84,7 +84,7 @@ export const getThreadHandler = async (c: Context) => {
       isRead: Boolean(r.is_read),
       createdAt: r.created_at,
       senderName: r.sender_name ?? '',
-      senderProfilePicture: ''
+      senderProfilePicture: r.sender_profile_picture ?? ''
     }));
 
     return c.json({ messages }, 200);
@@ -104,7 +104,7 @@ export const getConversationsHandler = async (c: Context) => {
     const conversations = rows.map(r => ({
       otherUserId: r.other_user_id,
       otherName: r.other_name ?? '',
-      otherProfilePicture: '',
+      otherProfilePicture: r.other_profile_picture ?? '',
       lastMessage: decrypt(r.last_message ?? ''),
       lastMessageAt: r.last_message_at ?? '',
       unreadCount: Number(r.unread_count ?? 0)
